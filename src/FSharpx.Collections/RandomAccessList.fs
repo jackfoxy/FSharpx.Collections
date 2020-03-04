@@ -325,6 +325,138 @@ and [<Serializable>] RandomAccessList<'T> (count,shift:int,root:NodeR,tail:obj[]
         if i >= 0 && i < count then Some(this.Update (i,x))
         else None
 
+    static member inline (+) (xs : RandomAccessList<'T1>, ys : RandomAccessList<'T1>) =
+        if xs.Length = ys.Length  then
+            if xs.Length = 0 then
+                xs
+            else
+               let arr = Array.create xs.Length xs.[0]
+               for i in [0..arr.Length - 1] do
+                   arr.[i] <- xs.[i] + ys.[i]
+
+               RandomAccessList.ofSeq arr
+        else
+            invalidArg "zip" "length of RandomAccessList not the same"
+
+    static member inline (+) (xs : RandomAccessList<'T1>, x : 'T1) =
+        if xs.Length = 0 then
+            xs
+        else
+           let arr = Array.create xs.Length xs.[0]
+           for i in [0..arr.Length - 1] do
+               arr.[i] <- xs.[i] + x
+
+           RandomAccessList.ofSeq arr
+
+    //static member inline (+) (x : 'T1, xs : RandomAccessList<'T1>) = 
+    //    if xs.Length = 0 then
+    //        xs
+    //    else
+    //       let arr = Array.create xs.Length xs.[0]
+    //       for i in [0..arr.Length - 1] do
+    //           arr.[i] <- xs.[i] + x
+
+    //       RandomAccessList.ofSeq arr
+
+    static member inline (*) (xs : RandomAccessList<'T1>, ys : RandomAccessList<'T1>) = 
+        if xs.Length = ys.Length  then
+            if xs.Length = 0 then
+                xs
+            else
+               let arr = Array.create xs.Length xs.[0]
+               for i in [0..arr.Length - 1] do
+                   arr.[i] <- xs.[i] * ys.[i]
+
+               RandomAccessList.ofSeq arr
+        else
+            invalidArg "zip" "length of RandomAccessList not the same"
+
+    static member inline (*) (xs : RandomAccessList<'T1>, x : 'T1) = 
+        if xs.Length = 0 then
+            xs
+        else
+           let arr = Array.create xs.Length xs.[0]
+           for i in [0..arr.Length - 1] do
+               arr.[i] <- xs.[i] * x
+
+           RandomAccessList.ofSeq arr
+
+    static member inline (*) (x : 'T1, xs : RandomAccessList<'T1>) = 
+        if xs.Length = 0 then
+            xs
+        else
+           let arr = Array.create xs.Length xs.[0]
+           for i in [0..arr.Length - 1] do
+               arr.[i] <- xs.[i] * x
+
+           RandomAccessList.ofSeq arr
+
+    static member inline (-) (xs : RandomAccessList<'T1>, ys : RandomAccessList<'T1>) = 
+        if xs.Length = ys.Length  then
+            if xs.Length = 0 then
+                xs
+            else
+               let arr = Array.create xs.Length xs.[0]
+               for i in [0..arr.Length - 1] do
+                   arr.[i] <- xs.[i] - ys.[i]
+
+               RandomAccessList.ofSeq arr
+        else
+            invalidArg "zip" "length of RandomAccessList not the same"
+
+    static member inline (-) (xs : RandomAccessList<'T1>, x : 'T1) = 
+        if xs.Length = 0 then
+            xs
+        else
+           let arr = Array.create xs.Length xs.[0]
+           for i in [0..arr.Length - 1] do
+               arr.[i] <- xs.[i] - x
+
+           RandomAccessList.ofSeq arr
+
+    static member inline (-) (x : 'T1, xs : RandomAccessList<'T1>) = 
+        if xs.Length = 0 then
+            xs
+        else
+           let arr = Array.create xs.Length xs.[0]
+           for i in [0..arr.Length - 1] do
+               arr.[i] <- xs.[i] - x
+
+           RandomAccessList.ofSeq arr
+
+    static member inline (/) (xs : RandomAccessList<'T1>, ys : RandomAccessList<'T1>) = 
+        if xs.Length = ys.Length  then
+            if xs.Length = 0 then
+                xs
+            else
+               let arr = Array.create xs.Length xs.[0]
+               for i in [0..arr.Length / 1] do
+                   arr.[i] <- xs.[i] - ys.[i]
+
+               RandomAccessList.ofSeq arr
+        else
+            invalidArg "zip" "length of RandomAccessList not the same"
+
+    static member inline (/) (xs : RandomAccessList<'T1>, x : 'T1) = 
+        if xs.Length = 0 then
+            xs
+        else
+           let arr = Array.create xs.Length xs.[0]
+           for i in [0..arr.Length - 1] do
+               arr.[i] <- xs.[i] / x
+
+           RandomAccessList.ofSeq arr
+
+    static member inline (/) (x : 'T1, xs : RandomAccessList<'T1>) = 
+        if xs.Length = 0 then
+            xs
+        else
+           let arr = Array.create xs.Length xs.[0]
+           for i in [0..arr.Length - 1] do
+               arr.[i] <- xs.[i] / x
+
+           RandomAccessList.ofSeq arr
+
     interface System.Collections.Generic.IEnumerable<'T> with
         member this.GetEnumerator () =
             this.rangedIterator(0,count).GetEnumerator()
@@ -446,9 +578,7 @@ module RandomAccessList =
         else (Seq.foldBack (windowFun windowLength) items (empty.Cons empty<'T>)) (*Seq.fold (windowFun windowLength) (empty.Cons empty<'T>) items*) // TODO: Check if this should be foldBack due to inversion effects of prepending
 
     let zip (randomAccessList1 : RandomAccessList<'T>) (randomAccessList2 : RandomAccessList<'T2>) =
-        if randomAccessList1.Length = randomAccessList2.Length 
-            || randomAccessList1.IsEmpty
-        then
+        if randomAccessList1.Length = randomAccessList2.Length then
             let arr = Array.create randomAccessList1.Length (randomAccessList1.[0], randomAccessList2.[0])
             for i in [1..arr.Length - 1] do
                 arr.[i] <- randomAccessList1.[i], randomAccessList2.[i]

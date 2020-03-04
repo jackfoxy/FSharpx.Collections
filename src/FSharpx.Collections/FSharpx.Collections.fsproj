@@ -36,7 +36,6 @@
     <Compile Include="CircularBuffer.fs" />
     <Compile Include="PriorityQueue.fs" />
     <Compile Include="NonEmptyList.fs" />
-    <Compile Include="RandomAccessList.fsi" />
     <Compile Include="RandomAccessList.fs" />
     <Compile Include="Queue.fsi" />
     <Compile Include="Queue.fs" />

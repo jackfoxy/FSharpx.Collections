@@ -13,7 +13,7 @@ open System.Runtime.Serialization.Formatters.Binary
 //vector blocksizej of 32, need to generate lists up to 100
 
 module RandomAccessListTest =
-    let emptyRandomAccessList = RandomAccessList.empty
+    let emptyRandomAccessList = RandomAccessList.empty<int>
 
     [<Tests>]
     let testRandomAccessList =
@@ -845,4 +845,41 @@ module RandomAccessListTest =
             mkSerializationProperty<string> "string"
             mkSerializationProperty<Guid> "GUID"
             mkSerializationProperty<bigint> "big integer"
+        ]
+
+    [<Tests>]
+    let testRandomAccessListArithmetic =
+
+        testList "Arithmetic" [
+
+            testCase "vector vector addition" <| fun () ->
+                let r1 = [|1; 2; 3; 4; 5|] |> RandomAccessList.ofSeq
+                let r2 = [|1; 2; 3; 4; 5|] |> RandomAccessList.ofSeq
+                let r3 = r1 + r2
+
+                let expected = 2, 10
+                let actual = r3.[0], r3.[4]
+
+                Expect.equal (sprintf "actual: %A ; expected: %A" actual expected ) 
+                    expected actual
+
+            testCase "vector scalar addition" <| fun () ->
+                let r1 = [|1; 2; 3; 4; 5|] |> RandomAccessList.ofSeq
+                let r3 = r1 + 4
+
+                let expected = 5, 9
+                let actual = r3.[0], r3.[4]
+
+                Expect.equal (sprintf "actual: %A ; expected: %A" actual expected ) 
+                    expected actual
+
+            //testCase "scalar vector addition" <| fun () ->
+            //    let r1 = [|1; 2; 3; 4; 5|] |> RandomAccessList.ofSeq
+            //    let r3 = 4 + r1
+
+            //    let expected = 5, 9
+            //    let actual = r3.[0], r3.[4]
+
+            //    Expect.equal (sprintf "actual: %A ; expected: %A" actual expected ) 
+            //        expected actual
         ]
