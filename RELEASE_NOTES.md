@@ -1,4 +1,4 @@
-#### 2.2.0 - unreleased
+#### 2.1.2 - unreleased
 * minor breaking change of  RandomAccessList.empty<requires type>
 
 #### 2.1.2 - 2019-12-24

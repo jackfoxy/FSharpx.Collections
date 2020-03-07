@@ -238,6 +238,7 @@ and [<Serializable>] RandomAccessList<'T> (count,shift:int,root:NodeR,tail:obj[]
                     i <- i - 1
                 }
 
+    /// O(1). Returns a new random access list with the element added at the start.
     member this.Cons (x : 'T) =
         if count - tailOff < Literals2.blockSize then
             let newTail = Array.append tail [|x:>obj|]
@@ -257,16 +258,20 @@ and [<Serializable>] RandomAccessList<'T> (count,shift:int,root:NodeR,tail:obj[]
                 let newRoot = this.PushTail(shift,root,tailNode)
                 RandomAccessList<'T>(count + 1,shift,newRoot,[| x |])
 
+    /// O(1). Returns true if the random access list has no elements.
     member this.IsEmpty = (count = 0)
 
+    /// O(1) for all practical purposes; really O(log32n). Returns random access list element at the index.
     member this.Item
         with get i =
             let k = (count - 1) - i
             let node = this.ArrayFor k
             node.[k &&& Literals2.blockIndexMask] :?> 'T
 
+    /// O(1). Returns the first element in the random access list. If the random access list is empty it throws an exception.
     member this.Head = if count > 0 then this.[0] else failwith "Can't peek empty randomAccessList"
 
+    /// O(n). Returns random access list reversed.
     member this.Rev() =
         if count = 0 then RandomAccessList.Empty() :> RandomAccessList<'T>
         else
@@ -277,10 +282,13 @@ and [<Serializable>] RandomAccessList<'T> (count,shift:int,root:NodeR,tail:obj[]
 
             ret.persistent()
 
+    /// O(1). Returns option first element in the random access list.
     member this.TryHead = if count > 0 then Some (this.[0]) else None
 
+    /// O(1). Returns the number of items in the random access list.
     member this.Length : int = count
 
+    /// O(1) for all practical purposes; really O(log32n). Returns a new random access list without the first item. If the collection is empty it throws an exception.
     member this.Tail =
         if count = 0 then failwith "Can't tail empty randomAccessList" else
         if count = 1 then RandomAccessList<'T>.Empty() else
@@ -303,12 +311,16 @@ and [<Serializable>] RandomAccessList<'T> (count,shift:int,root:NodeR,tail:obj[]
 
             RandomAccessList(count - 1, newshift, newroot, newtail)
 
+    /// O(1) for all practical purposes; really O(log32n). Returns option random access list without the first item.
     member this.TryTail = if count = 0 then None else Some(this.Tail)
 
+    /// O(1) for all practical purposes; really O(log32n). Returns tuple first element and random access list without first item
     member this.Uncons = if count > 0 then this.[0], this.Tail else failwith "Can't peek empty randomAccessList"
 
+    /// O(1) for all practical purposes; really O(log32n). Returns option tuple first element and random access list without first item
     member this.TryUncons = if count > 0 then Some(this.[0], this.Tail)  else None
 
+    /// O(1) for all practical purposes; really O(log32n). Returns a new random access list that contains the given value at the index.
     member this.Update(i, x : 'T) =
         let k = (count - 1) - i
         if k >= 0 && k < count then
@@ -321,6 +333,7 @@ and [<Serializable>] RandomAccessList<'T> (count,shift:int,root:NodeR,tail:obj[]
         elif k = count then this.Cons x
         else raise (new System.IndexOutOfRangeException())
 
+    /// O(1) for all practical purposes; really O(log32n). Returns option random access list that contains the given value at the index.
     member this.TryUpdate(i, x : 'T) =
         if i >= 0 && i < count then Some(this.Update (i,x))
         else None
@@ -477,6 +490,7 @@ module RandomAccessList =
     //pattern discriminators  (active pattern)
     let (|Cons|Nil|) (v : RandomAccessList<'T>) = match v.TryUncons with Some(a,b) -> Cons(a,b) | None -> Nil
 
+    /// O(n). Returns a new random access list with the elements of the second random access list added at the end.
     let append (listA : RandomAccessList<'T>) (listB : RandomAccessList<'T>) =
         let mutable ret = TransientVect()
         for i in (listB.Length - 1) .. -1 .. 0 do
@@ -485,10 +499,13 @@ module RandomAccessList =
             ret <- ret.conj listA.[i]
         ret.persistent()
 
+    /// O(1). Returns a new random access list with the element added at the start.
     let inline cons (x : 'T) (randomAccessList : 'T RandomAccessList) = randomAccessList.Cons x
 
+    /// O(1). Returns random access list of no elements.
     let empty<'T> = RandomAccessList.Empty() :> RandomAccessList<'T>
 
+    /// O(n). Returns a state from the supplied state and a function operating from left to right.
     let inline fold (f : ('State -> 'T -> 'State)) (state : 'State) (v : RandomAccessList<'T>) =
         let rec loop state' (v' : RandomAccessList<'T>) count =
             match count with
@@ -496,6 +513,7 @@ module RandomAccessList =
             | _ -> loop (f state' v'.[count]) v' (count + 1)
         loop state v 0
 
+    /// O(n). Returns a state from the supplied state and a function operating from right to left.
     let inline foldBack (f : ('T -> 'State -> 'State)) (v : RandomAccessList<'T>) (state : 'State) =
         let rec loop state' (v' : RandomAccessList<'T>) count =
             match count with
@@ -503,67 +521,89 @@ module RandomAccessList =
             | _ -> loop (f v'.[count] state') v' (count - 1)
         loop state v (v.Length - 1)
 
+    /// O(n). Returns a random access list of the supplied length using the supplied function operating on the index.
     let init count (f: int -> 'T) : 'T RandomAccessList =
         let mutable ret = TransientVect()
         for i in 0..(count-1) do
             ret <- ret.conj(f i)
         ret.persistent().Rev()
 
+    /// O(1). Returns true if the random access list has no elements.
     let inline isEmpty (randomAccessList :'T RandomAccessList) = randomAccessList.IsEmpty
 
+    /// O(1). Returns the first element in the random access list. If the random access list is empty it throws an exception.
     let inline head (randomAccessList :'T RandomAccessList) = randomAccessList.Head
 
+    /// O(1). Returns option first element in the random access list.
     let inline tryHead (randomAccessList :'T RandomAccessList) = randomAccessList.TryHead
 
+    /// O(1). Returns the number of items in the random access list.
     let inline length (randomAccessList :'T RandomAccessList) : int = randomAccessList.Length
 
+    /// O(n). Returns a random access list whose elements are the results of applying the supplied function to each of the elements of a supplied random access list.
     let map (f : 'T -> 'T1) (randomAccessList :'T RandomAccessList) : 'T1 RandomAccessList =
         let mutable ret = TransientVect()
         for item in randomAccessList do
             ret <- ret.conj(f item)
         ret.persistent().Rev()
 
+    /// O(1) for all practical purposes; really O(log32n). Returns the value at the index.
     let inline nth i (randomAccessList :'T RandomAccessList) = randomAccessList.[i]
 
+    /// O(1) for all practical purposes; really O(log32n). Returns option value at the index.
     let inline tryNth i (randomAccessList :'T RandomAccessList) =
         if i >= 0 && i < randomAccessList.Length then Some(randomAccessList.[i])
         else None
 
+    /// O(log32(m,n)). Returns the value at the outer index, inner index. If either index is out of bounds it throws an exception.
     let inline nthNth i j (randomAccessList :'T RandomAccessList RandomAccessList) : 'T = randomAccessList.[i] |> nth j
 
+    /// O(log32(m,n)). Returns option value at the indices.
     let inline tryNthNth i j (randomAccessList :'T RandomAccessList RandomAccessList) =
         match tryNth i randomAccessList with
         | Some v' -> tryNth j v'
         | None -> None
 
+    /// O(n). Returns a random access list of the seq.
     let ofSeq (items : 'T seq) = RandomAccessList.ofSeq items
 
+    /// O(n). Returns new random access list reversed.
     let inline rev (randomAccessList :'T RandomAccessList) = randomAccessList.Rev()
 
+    /// O(1). Returns a new random access list of one element.
     let inline singleton (x : 'T) = empty |> cons x
 
+    /// O(1) for all practical purposes; really O(log32n). Returns a new random access list without the first item. If the collection is empty it throws an exception.
     let inline tail (randomAccessList :'T RandomAccessList) = randomAccessList.Tail
 
+    /// O(1) for all practical purposes; really O(log32n). Returns option random access list without the first item.
     let inline tryTail (randomAccessList :'T RandomAccessList) = randomAccessList.TryTail
 
+    /// O(n). Views the given random access list as a sequence.
     let inline toSeq (randomAccessList: 'T RandomAccessList) = randomAccessList :> seq<'T>
 
+    /// O(1) for all practical purposes; really O(log32n). Returns tuple first element and random access list without first item
     let inline uncons (randomAccessList :'T RandomAccessList) = randomAccessList.Uncons
 
+    /// O(1) for all practical purposes; really O(log32n). Returns option tuple first element and random access list without first item
     let inline tryUncons (randomAccessList :'T RandomAccessList) = randomAccessList.TryUncons
 
+    /// O(1) for all practical purposes; really O(log32n). Returns a new random access list that contains the given value at the index.
     let inline update i (x : 'T) (randomAccessList : 'T RandomAccessList) = randomAccessList.Update(i, x)
 
+    /// O(log32(m,n)). Returns a new random access list of random access lists that contains the given value at the indices.
     let inline updateNth i j (x : 'T) (randomAccessList : 'T RandomAccessList RandomAccessList) : 'T RandomAccessList RandomAccessList = randomAccessList.Update(i, (randomAccessList.[i].Update(j, x)))
 
+    /// O(1) for all practical purposes; really O(log32n). Returns option random access list that contains the given value at the index.
     let inline tryUpdate i (x : 'T) (randomAccessList : 'T RandomAccessList) = randomAccessList.TryUpdate(i, x)
 
+    /// O(log32(m,n)). Returns option random access list that contains the given value at the indices.
     let inline tryUpdateNth i j (x : 'T) (randomAccessList : 'T RandomAccessList RandomAccessList) =
         if i >= 0 && i < randomAccessList.Length && j >= 0 && j < randomAccessList.[i].Length
         then Some(updateNth i j x randomAccessList)
         else None
 
-    let inline windowFun windowLength =
+    let inline private windowFun windowLength =
         fun t (v : RandomAccessList<RandomAccessList<'T>>) ->
         if v.Head.Length = windowLength
         then
@@ -573,10 +613,12 @@ module RandomAccessList =
             tail v
             |> cons (head v |> cons t)
 
+    /// O(n). Returns a random access list of random access lists of given length from the seq. Result may be a jagged random access list.
     let inline windowSeq windowLength (items: 'T seq) =
         if windowLength < 1 then invalidArg "windowLength" "length is less than 1"
         else (Seq.foldBack (windowFun windowLength) items (empty.Cons empty<'T>)) (*Seq.fold (windowFun windowLength) (empty.Cons empty<'T>) items*) // TODO: Check if this should be foldBack due to inversion effects of prepending
 
+    /// O(n). Combines the two RandomAccessLists into a RandomAccessList of pairs. The two RandomAccessLists must have equal lengths, otherwise an ArgumentException is raised.
     let zip (randomAccessList1 : RandomAccessList<'T>) (randomAccessList2 : RandomAccessList<'T2>) =
         if randomAccessList1.Length = randomAccessList2.Length then
             let arr = Array.create randomAccessList1.Length (randomAccessList1.[0], randomAccessList2.[0])
@@ -587,6 +629,7 @@ module RandomAccessList =
         else
             invalidArg "zip" "length of RandomAccessList not the same or both empty"
 
+    /// O(n). Applies a function to each element of the collection, threading an accumulator argument through the computation. This function first applies the function to the first two elements of the list. Then, it passes this result into the function along with the third element and so on. Finally, it returns the final result. If the input function is f and the elements are i0...iN, then it computes f (... (f i0 i1) i2 ...) iN.
     let reduce f (randomAccessList : RandomAccessList<'T>) =
         if randomAccessList.Length > 0 then
             if randomAccessList.Length = 1 then
@@ -601,6 +644,7 @@ module RandomAccessList =
         else
             invalidArg "zip" "length of RandomAccessList not the same or both empty"
 
+    /// O(n). Builds a new collection whose elements are the results of applying the given function to the corresponding elements of the two collections pairwise. The two input arrays must have the same lengths, otherwise ArgumentException is raised.
     let map2 f (randomAccessList1 : RandomAccessList<'T1>) (randomAccessList2 : RandomAccessList<'T2>) =
         randomAccessList2
         |> zip randomAccessList1
