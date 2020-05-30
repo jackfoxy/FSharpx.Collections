@@ -169,23 +169,6 @@ Purely functional (immutable) Queue based on Okasaki's batched queue.</p>
 
           </td>
         </tr>
-        <tr>
-          <td class="type-name">
-            <a href="fsharpx-collections-randomaccesslist-1.html">RandomAccessList<'T></a>
-          </td>
-          <td class="xmldoc">
-          <p>RandomAccessList is an ordered linear structure implementing the List signature
-(head, tail, cons), as well as inspection (lookup) and update (returning a new
-immutable instance) of any element in the structure by index. Length is O(1). Indexed
-lookup or update (returning a new immutable instance of RandomAccessList) of any element
-is O(log32n), which is close enough to O(1) as to make no practical difference: a
-RandomAccessList containing 4 billion items can lookup or update any item in at most 7
-steps. Ordering is by insertion history. While PersistentVector<'T> is appending to the
-end this version prepends elements to the list.</p>
-
-
-          </td>
-        </tr>
     </tbody>
   </table>
   <table class="table table-bordered module-list">
@@ -320,9 +303,7 @@ end this version prepends elements to the list.</p>
             <a href="fsharpx-collections-randomaccesslist.html">RandomAccessList</a>
           </td>
           <td class="xmldoc">
-          <p>Defines functions which allow to access and manipulate RandomAccessLists.</p>
-
-
+          
           </td>
         </tr>
         <tr>
